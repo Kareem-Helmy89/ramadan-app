@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق تنسيق الشخصيات - رمضان</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Google Fonts - Arabic Ruq'ah Style (Optimized) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="lanterns-pattern-top" style="background-image: url('{{ url_for('static', filename='favicon.ico') }}');"></div>
+        <div class="container">
+            <h1 class="header-title">رمضان كريم</h1>
+            <p class="header-subtitle">جاهز لتعبئة الكرش؟</p>
+            <button class="iftar-times-btn" onclick="showIftarTimes()">
+                🕐 مواعيد تعبئة الكرش
+            </button>
+        </div>
+    </header>
+
+    <!-- Iftar Times Modal -->
+    <div id="iftarModal" class="iftar-modal">
+        <div class="iftar-modal-content">
+            <div class="iftar-modal-header">
+                <h2>🕐 مواعيد تعبئة الكرش (أذان المغرب)</h2>
+                <button class="close-modal" onclick="closeIftarModal()">&times;</button>
+            </div>
+            <div class="iftar-modal-body">
+                <div id="iftarLoading" class="iftar-loading">
+                    <div class="loading-spinner-iftar"></div>
+                    <p>جارٍ تحميل مواعيد أذان المغرب...</p>
+                    <p style="font-size: 0.9rem; color: var(--color-toffee-brown); margin-top: 10px;">قد يستغرق هذا بضع ثوانٍ</p>
+                </div>
+                <div id="iftarContent" class="iftar-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <main class="hero-section">
+        <div class="container">
+            <div class="character-display">
+                <!-- Original Character -->
+                <div class="character-card">
+                    <h2 class="card-title">الشخصية الأصلية</h2>
+                    <div class="image-wrapper">
+                        <img src="{{ url_for('static', filename='images/original-character.jpg') }}" 
+                             alt="الشخصية الأصلية" 
+                             id="originalCharacter"
+                             class="character-image"
+                             loading="lazy"
+                             decoding="async"
+                             oncontextmenu="return false;"
+                             draggable="false"
+                             onselectstart="return false;">
+                        <button class="download-btn" onclick="downloadImage('originalCharacter', 'original-character.jpg')" title="تحميل الصورة">
+                            <span>⬇</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selection Section -->
+                <div class="input-card">
+                    <h2 class="card-title">اختر نوع الشخصية</h2>
+                    
+                    <div class="select-group">
+                        <label for="categorySelect" class="select-label">الفئة</label>
+                        <select id="categorySelect" class="select-input" onchange="window.handleCategoryChange && window.handleCategoryChange(this.value)">
+                            <option value="" selected disabled>اختر فئة...</option>
+                            <option value="arabCharacters">شخصيات عربية</option>
+                            <option value="foreignCharacters">شخصيات أجنبية</option>
+                            <option value="jobs">وظائف ومهن</option>
+                            <option value="clubs">أندية كرة قدم</option>
+                        </select>
+                    </div>
+
+                    <div class="select-group">
+                        <label for="itemSelect" class="select-label">التصميم</label>
+                        <select id="itemSelect" class="select-input" disabled>
+                            <option value="">اختر أولاً الفئة من الأعلى</option>
+                        </select>
+                    </div>
+
+                    <button id="showCharacterBtn" class="generate-btn">
+                        <span class="btn-text">عرض الشخصية</span>
+                    </button>
+                </div>
+
+                <!-- Generated Result -->
+                <div class="character-card">
+                    <h2 class="card-title">الشخصية المختارة</h2>
+                    <div class="image-wrapper">
+                        <div id="resultPlaceholder" class="result-placeholder">
+                            <p>اختر فئة وتصميم من الوسط لعرض الصورة هنا</p>
+                        </div>
+                        <img id="generatedImage" 
+                             src="" 
+                             alt="الصورة المولدة" 
+                             class="character-image"
+                             style="display: none;"
+                             oncontextmenu="return false;"
+                             draggable="false"
+                             onselectstart="return false;">
+                        <button class="download-btn" id="downloadGeneratedBtn" onclick="downloadImage('generatedImage', 'generated-character.jpg')" title="تحميل الصورة" style="display: none;">
+                            <span>⬇</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section">
+        <div class="container">
+            <div id="galleryGrid" class="gallery-grid">
+                {% if recent_generations %}
+                    {% for generation in recent_generations %}
+                    <div class="gallery-item">
+                        <div class="gallery-image-wrapper">
+                            <img src="{{ generation.image_url }}" 
+                                 alt="{{ generation.prompt }}" 
+                                 class="gallery-image"
+                                 loading="lazy"
+                                 decoding="async"
+                                 oncontextmenu="return false;"
+                                 draggable="false"
+                                 onselectstart="return false;"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                            <button class="download-btn" onclick="downloadImageFromUrl('{{ generation.image_url }}', 'gallery-image-{{ generation.id }}.jpg')" title="تحميل الصورة">
+                                <span>⬇</span>
+                            </button>
+                        </div>
+                        <p class="gallery-prompt">{{ generation.prompt }}</p>
+                        <span class="gallery-date">{{ generation.created_at.strftime('%Y-%m-%d %H:%M') if generation.created_at else '' }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-gallery">
+                        <div class="philosophical-quote">
+                            <p class="quote-line">تم تعبئة الكرش بنجاح، ولكن ...</p>
+                            <p class="quote-text">ولكن من ذا الذي يعبئ الفراغ الكامن في أعماق قلوبنا؟</p>
+                            <p class="quote-text">أهو الزمن؟ أم الآخرون؟</p>
+                            <p class="quote-text">أم نحن أنفسنا في صراعنا الدائم مع العدم؟</p>
+                            <p class="quote-text">وإذا كان الامتلاء ممكناً، فبأي جوهر يُصاغ؟</p>
+                            <p class="quote-text">أهو الحب؟ أم المعرفة؟</p>
+                            <p class="quote-text">أم مجرد وهم آخر يكسو خواء جديداً بثوب مختلف؟!</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-attribution">
+                Icons made by <a href="https://www.freepik.com" title="Freepik" target="_blank" rel="noopener noreferrer">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon" target="_blank" rel="noopener noreferrer">www.flaticon.com</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Defer JavaScript loading for faster page load -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=3.0" defer></script>
+    
+    <!-- Image Download and Protection Functions -->
+    <script>
+        // Prevent right-click, drag, and copy
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.tagName === 'IMG' && e.target.classList.contains('character-image') || e.target.classList.contains('gallery-image')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.tagName === 'IMG' && (e.target.classList.contains('character-image') || e.target.classList.contains('gallery-image'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.addEventListener('selectstart', function(e) {
+            if (e.target.tagName === 'IMG' && (e.target.classList.contains('character-image') || e.target.classList.contains('gallery-image'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable keyboard shortcuts for copy
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'x' || e.key === 'X')) {
+                const target = e.target;
+                if (target.tagName === 'IMG' && (target.classList.contains('character-image') || target.classList.contains('gallery-image'))) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        // Download image function
+        function downloadImage(imageId, filename) {
+            const img = document.getElementById(imageId);
+            if (!img || !img.src || img.style.display === 'none') {
+                return;
+            }
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = filename;
+            link.target = '_blank';
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Download image from URL
+        function downloadImageFromUrl(imageUrl, filename) {
+            if (!imageUrl) {
+                return;
+            }
+
+            // Fetch the image and convert to blob
+            fetch(imageUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error downloading image:', error);
+                    // Fallback: open in new tab
+                    window.open(imageUrl, '_blank');
+                });
+        }
+
+        // Iftar Times Functions
+        function showIftarTimes() {
+            const modal = document.getElementById('iftarModal');
+            const loading = document.getElementById('iftarLoading');
+            const content = document.getElementById('iftarContent');
+            
+            modal.style.display = 'block';
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            content.innerHTML = '';
+            
+            // Fetch iftar times
+            fetch('/api/iftar-times')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received:', data);
+                    console.log('Countries:', Object.keys(data.countries || {}));
+                    console.log('Dates:', data.dates);
+                    loading.style.display = 'none';
+                    if (data.success && data.countries && data.dates && data.dates.length > 0) {
+                        // Check if we have any times
+                        const hasTimes = Object.values(data.countries).some(country => 
+                            country.times && Object.values(country.times).some(time => time !== '--:--')
+                        );
+                        if (hasTimes) {
+                            displayIftarTimes(data);
+                        } else {
+                            content.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">لم يتم العثور على مواعيد. يرجى المحاولة مرة أخرى أو التحقق من الاتصال بالإنترنت.</p>';
+                            content.style.display = 'block';
+                        }
+                    } else {
+                        content.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">حدث خطأ في تحميل المواعيد: ' + (data.error || 'خطأ غير معروف') + '</p>';
+                        content.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    content.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">حدث خطأ في تحميل المواعيد: ' + error.message + '<br>يرجى المحاولة مرة أخرى.</p>';
+                    content.style.display = 'block';
+                });
+        }
+
+        function closeIftarModal() {
+            document.getElementById('iftarModal').style.display = 'none';
+        }
+
+        function displayIftarTimes(data) {
+            const content = document.getElementById('iftarContent');
+            const today = new Date().toISOString().split('T')[0];
+            
+            console.log('Displaying times for dates:', data.dates);
+            console.log('Countries:', Object.keys(data.countries));
+            
+            if (!data.dates || data.dates.length === 0) {
+                content.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">لا توجد مواعيد متاحة.</p>';
+                content.style.display = 'block';
+                return;
+            }
+            
+            // Create table
+            let html = '<div class="iftar-table-wrapper"><table class="iftar-table"><thead><tr><th>البلد</th>';
+            
+            // Add date headers
+            data.dates.forEach(date => {
+                const dateObj = new Date(date + 'T00:00:00');
+                const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'short' });
+                const dayNum = dateObj.getDate();
+                const monthName = dateObj.toLocaleDateString('ar-EG', { month: 'short' });
+                const isToday = date === today;
+                html += `<th ${isToday ? 'class="today-cell"' : ''}>${dayName}<br>${dayNum} ${monthName}</th>`;
+            });
+            
+            html += '</tr></thead><tbody>';
+            
+            // Add country rows
+            const countries = Object.keys(data.countries);
+            if (countries.length === 0) {
+                html += '<tr><td colspan="' + (data.dates.length + 1) + '" style="text-align: center; padding: 20px;">لا توجد بيانات متاحة</td></tr>';
+            } else {
+                countries.forEach(country => {
+                    html += `<tr><td class="country-name">${country}</td>`;
+                    data.dates.forEach(date => {
+                        const countryData = data.countries[country];
+                        const time = (countryData && countryData.times && countryData.times[date]) ? countryData.times[date] : '--:--';
+                        const isToday = date === today;
+                        html += `<td ${isToday ? 'class="today-cell"' : ''}>${time}</td>`;
+                    });
+                    html += '</tr>';
+                });
+            }
+            
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+            content.style.display = 'block';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('iftarModal');
+            if (event.target === modal) {
+                closeIftarModal();
+            }
+        }
+    </script>
+    
+    <!-- Redirect to loading page only if video not shown before -->
+    <script>
+        // Check if video was already shown (once per browser)
+        const hasSeenVideo = localStorage.getItem('hasSeenLoadingVideo');
+        if (!hasSeenVideo) {
+            // First time - show loading video
+            window.location.replace('{{ url_for("loading") }}');
+        }
+        // If already shown, stay on this page
+    </script>
+</body>
+</html>
