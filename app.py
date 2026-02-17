@@ -26,6 +26,7 @@ DB_CONFIG = {
     'database': os.getenv('DB_NAME', 'ramadan_app'),
     'user': os.getenv('DB_USER', 'root'),
     'password': os.getenv('DB_PASSWORD', ''),
+    'port': int(os.getenv('DB_PORT', 3306)),
     'charset': 'utf8mb4',
     'collation': 'utf8mb4_unicode_ci'
 }
