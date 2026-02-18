@@ -249,13 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'egyptian',   name: 'Egyptian / مصري',                     imageUrl: '/static/images/generated/arab-egyptian.jpg' },
             { id: 'saudi',      name: 'Saudi / سعودي',                       imageUrl: '/static/images/generated/arab-saudi.jpg' },
             { id: 'moroccan',   name: 'Moroccan / مغربي',                    imageUrl: '/static/images/generated/arab-moroccan.jpg' },
-            { id: 'emirati',    name: 'Emirati / إماراتي',                   imageUrl: '/static/images/generated/arab-emirati.jpg' },
-            { id: 'syrian',     name: 'Syrian / سوري',                       imageUrl: '/static/images/generated/arab-syrian.jpg' },
-            { id: 'sudanese',   name: 'Sudanese / سوداني',                   imageUrl: '/static/images/generated/arab-sudanese.jpg' },
-            { id: 'palestinian',name: 'Palestinian / فلسطيني',               imageUrl: '/static/images/generated/arab-palestinian.jpg' },
-            { id: 'iraqi',      name: 'Iraqi / عراقي',                       imageUrl: '/static/images/generated/arab-iraqi.jpg' },
-            { id: 'yemeni',     name: 'Yemeni / يمني',                       imageUrl: '/static/images/generated/arab-yemeni.jpg' },
-            { id: 'lebanese',   name: 'Lebanese / لبناني',                   imageUrl: '/static/images/generated/arab-lebanese.jpg' }
+            { id: 'emirati',    name: 'Emirati / إماراتي',                   imageUrl: '/static/images/generated/arab-emirati.jpg' }
         ],
 
         // Category 2: Foreign Characters (Nationalities)
@@ -276,7 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
         jobs: [
             { id: 'doctor',         name: 'Doctor / طبيب',                   imageUrl: '/static/images/generated/job-doctor.jpg' },
             { id: 'chef',           name: 'Chef / طباخ (شيف)',               imageUrl: '/static/images/generated/job-chef.jpg' },
-            { id: 'police_officer', name: 'Police Officer / ضابط شرطة',      imageUrl: '/static/images/generated/job-police-officer.jpg' },
             { id: 'astronaut',      name: 'Astronaut / رائد فضاء',           imageUrl: '/static/images/generated/job-astronaut.jpg' },
             { id: 'firefighter',    name: 'Firefighter / رجل إطفاء',         imageUrl: '/static/images/generated/job-firefighter.jpg' },
             { id: 'construction_engineer', name: 'Construction Engineer / مهندس بناء', imageUrl: '/static/images/generated/job-construction-engineer.jpg' },
